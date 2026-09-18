@@ -1,0 +1,1127 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>DS Truco</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"></noscript>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/firebase/10.10.0/firebase-app-compat.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/firebase/10.10.0/firebase-analytics-compat.min.js"></script>
+<style>
+  :root{
+    --felt-dark:#0d2a1f; --felt:#164634; --felt-light:#1f5b42;
+    --cream:#f3ecd6; --cream-dim:#d9d0b4; --ink:#20201a;
+    --gold:#c9a24b; --gold-bright:#e0bc6a;
+    --oro:#a9781f; --copa:#7a2727; --espada:#1c2b4a; --basto:#2e5c34;
+    --danger:#a83a3a; --teamA:#e0bc6a; --teamB:#7fb3d9;
+    --radius:14px; --shadow:0 10px 30px rgba(0,0,0,.35);
+    color-scheme: dark;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;height:100%;}
+  body{
+    font-family:'Inter',system-ui,sans-serif;
+    background:radial-gradient(ellipse at 50% -10%, var(--felt-light), var(--felt) 45%, var(--felt-dark) 100%);
+    color:var(--cream); min-height:100vh; -webkit-font-smoothing:antialiased;
+  }
+  #app{max-width:540px; margin:0 auto; min-height:100vh; display:flex; flex-direction:column; padding:14px 14px 22px;}
+  h1,h2,h3{font-family:'Fraunces',serif; margin:0; font-weight:600;}
+  .brand{display:flex; align-items:baseline; gap:8px; justify-content:center; margin:10px 0 22px;}
+  .brand .mark{font-size:30px; font-weight:700; letter-spacing:.5px;}
+  .brand .sub{font-size:12px; color:var(--cream-dim); letter-spacing:.5px;}
+  .card-panel{background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(0,0,0,.12)); border:1px solid rgba(255,255,255,.08); border-radius:var(--radius); padding:22px; box-shadow:var(--shadow);}
+  label{display:block; font-size:13px; color:var(--cream-dim); margin:14px 0 6px;}
+  label:first-child{margin-top:0;}
+  input[type=text]{width:100%; padding:12px 14px; border-radius:10px; border:1px solid rgba(255,255,255,.15); background:rgba(0,0,0,.25); color:var(--cream); font-size:16px; font-family:inherit;}
+  input[type=text]:focus{outline:2px solid var(--gold); outline-offset:1px;}
+  .choice-group{display:flex; gap:8px; margin-top:6px;}
+  .choice-btn{flex:1; padding:10px; border-radius:10px; border:1px solid rgba(255,255,255,.15); background:rgba(0,0,0,.2); color:var(--cream-dim); font-family:inherit; font-size:14px; cursor:pointer;}
+  .choice-btn.active{background:var(--gold); color:var(--ink); border-color:var(--gold); font-weight:600;}
+  .choice-btn small{display:block; font-size:10px; font-weight:400; margin-top:2px;}
+  button{font-family:inherit; cursor:pointer;}
+  .btn-primary{width:100%; margin-top:20px; padding:14px; border:none; border-radius:12px; background:linear-gradient(180deg,var(--gold-bright),var(--gold)); color:var(--ink); font-weight:700; font-size:16px;}
+  .btn-primary:disabled{opacity:.45; box-shadow:none;}
+  .btn-secondary{width:100%; margin-top:10px; padding:12px; border-radius:12px; background:transparent; border:1px solid rgba(255,255,255,.2); color:var(--cream); font-size:14px;}
+  .btn-ghost{width:100%; margin-top:8px; padding:12px; border-radius:12px; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.12); color:var(--cream); font-size:14px; font-weight:600;}
+  .tabs{display:flex; gap:6px; margin-bottom:14px;}
+  .tab{flex:1; text-align:center; padding:10px; border-radius:10px; background:rgba(0,0,0,.2); color:var(--cream-dim); font-weight:600; font-size:14px;}
+  .tab.active{background:rgba(255,255,255,.1); color:var(--cream);}
+  .code-display{text-align:center; font-family:'Fraunces',serif; font-size:44px; letter-spacing:10px; font-weight:700; color:var(--gold-bright); margin:18px 0 6px; user-select:all;}
+  .hint{text-align:center; font-size:13px; color:var(--cream-dim); line-height:1.5;}
+  .pulse-dot{width:8px; height:8px; border-radius:50%; background:#5bd67a; display:inline-block; animation:pulse 1.4s infinite; margin-right:6px;}
+  @keyframes pulse{0%,100%{opacity:1;} 50%{opacity:.3;}}
+  .center-col{flex:1; display:flex; flex-direction:column; align-items:stretch; justify-content:center;}
+  .error-txt{color:#e39a9a; font-size:13px; margin-top:10px; min-height:16px;}
+  .footer-note{text-align:center; font-size:11px; color:rgba(243,236,214,.35); margin-top:auto; padding-top:16px;}
+
+  /* seat list (lobby) */
+  .seat-list{display:flex; flex-direction:column; gap:8px; margin:16px 0;}
+  .seat-row{display:flex; align-items:center; gap:10px; padding:9px 12px; border-radius:10px; background:rgba(0,0,0,.2);}
+  .seat-row.empty{opacity:.4;}
+  .team-dot{width:10px; height:10px; border-radius:50%; flex-shrink:0;}
+  .team-dot.t0{background:var(--teamA);} .team-dot.t1{background:var(--teamB);}
+  .seat-row .snm{font-size:14px;}
+
+  /* ---- game screen ---- */
+  .table-wrap{flex:1; display:flex; flex-direction:column;}
+  .scorebar{display:flex; justify-content:space-between; align-items:center; gap:10px; padding:12px; background:rgba(0,0,0,.25); border-radius:12px; margin-bottom:10px;}
+  .score-side{display:flex; flex-direction:column; gap:2px; flex:1;}
+  .score-side.mine{align-items:flex-end; text-align:right;}
+  .score-side .label{font-size:11px; color:var(--cream-dim);}
+  .score-side .pts{font-family:'Fraunces',serif; font-size:26px; font-weight:700;}
+  .score-side.mine .pts{color:var(--gold-bright);}
+  .target-chip{font-size:11px; color:var(--cream-dim); background:rgba(0,0,0,.3); padding:4px 8px; border-radius:20px; white-space:nowrap;}
+
+  .seat-strip{display:flex; gap:8px; overflow-x:auto; padding:2px 2px 8px; margin-bottom:4px;}
+  .seat-chip{display:flex; flex-direction:column; align-items:center; gap:4px; flex-shrink:0; padding:6px 8px; border-radius:10px; border:1px solid transparent;}
+  .seat-chip.turn{border-color:var(--gold-bright); background:rgba(224,188,106,.1);}
+  .seat-chip .av{width:30px; height:30px; border-radius:50%; background:var(--felt-light); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:12px; border:2px solid rgba(255,255,255,.15);}
+  .seat-chip.t0 .av{border-color:var(--teamA);} .seat-chip.t1 .av{border-color:var(--teamB);}
+  .seat-chip .nm{font-size:10px; color:var(--cream-dim); max-width:52px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .seat-chip.folded{opacity:.35;}
+  .mini-backs{display:flex; gap:1px;}
+  .mini-back{width:10px; height:14px; border-radius:2px; background:repeating-linear-gradient(45deg, var(--espada), var(--espada) 2px, #26314f 2px, #26314f 4px); border:1px solid rgba(255,255,255,.2);}
+
+  .table-felt{flex:1; min-height:150px; background:radial-gradient(ellipse at center, var(--felt-light), var(--felt-dark) 120%); border-radius:16px; border:1px solid rgba(255,255,255,.08); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; padding:16px 10px 10px; position:relative; overflow:hidden;}
+  .rounds-scroll{width:100%; max-height:340px; overflow-y:auto; display:flex; flex-direction:column; gap:10px; align-items:center; padding-top:4px;}
+  .round-group{width:100%;}
+  .round-group.past{opacity:.62;}
+  .round-label{font-size:10px; color:var(--cream-dim); text-align:center; margin-bottom:4px; letter-spacing:.3px;}
+  .banner{position:absolute; top:8px; left:8px; right:8px; text-align:center; font-size:12px; color:var(--cream-dim); background:rgba(0,0,0,.3); border-radius:20px; padding:5px 10px;}
+  .round-plays{display:flex; flex-wrap:wrap; gap:10px; justify-content:center;}
+  .play-slot{display:flex; flex-direction:column; align-items:center; gap:3px;}
+  .play-slot .who{font-size:10px; color:var(--cream-dim);}
+  .feed{margin-top:8px; max-height:66px; overflow-y:auto; font-size:12px; color:var(--cream-dim); background:rgba(0,0,0,.18); border-radius:10px; padding:8px 10px; line-height:1.6;}
+  .feed div:last-child{color:var(--cream);}
+
+  .card{width:104px; height:148px; border-radius:12px; background:var(--cream); color:var(--ink); position:relative; box-shadow:0 4px 12px rgba(0,0,0,.4); display:flex; align-items:center; justify-content:center; flex-shrink:0; border:1px solid rgba(0,0,0,.15); overflow:hidden;}
+  .card .pip{position:absolute; font-family:'Fraunces',serif; font-weight:700; font-size:14px; line-height:1;}
+  .card .pip.tl{top:5px; left:6px;} .card .pip.br{bottom:5px; right:6px; transform:rotate(180deg);}
+  .card .icon{width:22px; height:22px;}
+  .card.oro{color:var(--oro);} .card.copa{color:var(--copa);} .card.espada{color:var(--espada);} .card.basto{color:var(--basto);}
+  .card.mini{width:76px; height:110px; border-radius:9px;} .card.mini .pip{font-size:10px;} .card.mini .icon{width:15px;height:15px;}
+  .card.playable{cursor:pointer; transition:transform .12s;}
+  .card.playable:active{transform:translateY(-6px);}
+  .card.art-card{background-size:cover; background-position:center; border:1px solid rgba(0,0,0,.2);}
+  .card-back{width:68px; height:96px; border-radius:10px; background:repeating-linear-gradient(45deg, var(--espada), var(--espada) 4px, #26314f 4px, #26314f 8px); border:1px solid rgba(255,255,255,.25);}
+
+  .my-hand{display:flex; justify-content:center; gap:8px; margin:12px 0 8px;}
+  .my-hand .card.disabled{opacity:.4; cursor:default;}
+
+  .action-bar{display:flex; flex-wrap:wrap; gap:7px; justify-content:center; margin-top:6px;}
+  .act-btn{padding:10px 14px; border-radius:22px; border:1px solid rgba(255,255,255,.18); background:rgba(255,255,255,.06); color:var(--cream); font-size:13px; font-weight:600;}
+  .act-btn.envido{border-color:#5b8fc9; color:#9cc4ee;}
+  .act-btn.truco{border-color:var(--gold); color:var(--gold-bright);}
+  .act-btn.flor{border-color:#b98fd6; color:#d9bdf0;}
+  .act-btn.mazo{border-color:var(--danger); color:#e39a9a;}
+  .act-btn.accept{background:#2f6d45; border-color:#2f6d45; color:#fff;}
+  .act-btn.decline{background:transparent; border-color:rgba(255,255,255,.2);}
+  .act-btn:disabled{opacity:.35;}
+
+  .pending-box{background:rgba(201,162,75,.12); border:1px solid rgba(201,162,75,.4); border-radius:12px; padding:12px; text-align:center; margin:8px 0;}
+  .pending-box .msg{font-size:14px; font-weight:600;}
+
+  .call-banner{position:fixed; top:36%; left:50%; transform:translate(-50%,-50%) scale(.4) rotate(-8deg); z-index:80; padding:16px 30px; border:4px solid var(--gold-bright); border-radius:12px; background:rgba(15,8,4,.88); box-shadow:0 14px 44px rgba(0,0,0,.55); opacity:0; pointer-events:none; text-align:center; white-space:nowrap;}
+  .call-banner .cb-who{font-size:12px; color:var(--cream-dim); letter-spacing:.5px; margin-bottom:2px;}
+  .call-banner .cb-text{font-family:'Fraunces',serif; font-weight:700; font-size:34px; letter-spacing:.5px; color:var(--gold-bright); text-transform:uppercase;}
+  .call-banner.cb-accept{border-color:#4fae6a;} .call-banner.cb-accept .cb-text{color:#7fe0a0;}
+  .call-banner.cb-decline{border-color:#c9585a;} .call-banner.cb-decline .cb-text{color:#f0a3a4;}
+  .call-banner.show{animation:callPop 1.7s ease forwards;}
+  @keyframes callPop{
+    0%{opacity:0; transform:translate(-50%,-50%) scale(.4) rotate(-8deg);}
+    14%{opacity:1; transform:translate(-50%,-50%) scale(1.1) rotate(-4deg);}
+    24%{transform:translate(-50%,-50%) scale(1) rotate(-6deg);}
+    82%{opacity:1; transform:translate(-50%,-50%) scale(1) rotate(-6deg);}
+    100%{opacity:0; transform:translate(-50%,-50%) scale(.92) rotate(-6deg);}
+  }
+
+  .overlay{position:fixed; inset:0; background:rgba(5,15,10,.72); display:flex; align-items:center; justify-content:center; z-index:50; padding:18px;}
+  .overlay .card-panel{max-width:380px; text-align:center;}
+  .overlay h2{margin-bottom:8px;}
+  .overlay p{color:var(--cream-dim); font-size:14px; line-height:1.6;}
+
+  /* splash */
+  .splash{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px; cursor:pointer;}
+  .splash .cards-fan{display:flex;}
+  .splash .cards-fan .card{margin-left:-22px; animation:dealIn .6s ease backwards;}
+  .splash .cards-fan .card:nth-child(1){animation-delay:.05s; transform:rotate(-16deg);}
+  .splash .cards-fan .card:nth-child(2){animation-delay:.15s; transform:rotate(-6deg) translateY(-4px);}
+  .splash .cards-fan .card:nth-child(3){animation-delay:.25s; transform:rotate(6deg) translateY(-4px);}
+  .splash .cards-fan .card:nth-child(4){animation-delay:.35s; transform:rotate(16deg);}
+  @keyframes dealIn{from{opacity:0; transform:translateY(20px) scale(.8);} to{opacity:1;}}
+  .splash h1{font-size:38px; letter-spacing:1px; opacity:0; animation:fadeUp .7s .5s ease forwards;}
+  .splash .tag{color:var(--cream-dim); font-size:13px; opacity:0; animation:fadeUp .7s .7s ease forwards;}
+  @keyframes fadeUp{from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:translateY(0);}}
+  .splash .skip{margin-top:10px; font-size:12px; color:var(--cream-dim); text-decoration:underline; opacity:0; animation:fadeUp .7s 1.4s ease forwards;}
+  .splash-video{flex:1; display:flex; align-items:center; justify-content:center; position:relative;}
+  video#introVid{width:100%; max-height:82vh; border-radius:16px; box-shadow:var(--shadow); object-fit:cover;}
+  .skip-video{position:absolute; bottom:18px; right:18px; padding:8px 14px; border-radius:20px; background:rgba(0,0,0,.45); border:1px solid rgba(255,255,255,.3); color:var(--cream); font-size:12px;}
+  ::-webkit-scrollbar{width:6px;} ::-webkit-scrollbar-thumb{background:rgba(255,255,255,.2); border-radius:4px;}
+</style>
+</head>
+<body>
+<div id="app"><div class="center-col"><p class="hint">Cargando DS Truco…</p></div></div>
+
+<script>
+(function(){
+"use strict";
+
+/* ============================== FIREBASE ============================== */
+// Your web app's Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyBJC6WQZ_diHCwt4D42ymnhFnC24EUBApk",
+  authDomain: "ds-truco.firebaseapp.com",
+  projectId: "ds-truco",
+  storageBucket: "ds-truco.firebasestorage.app",
+  messagingSenderId: "664066500074",
+  appId: "1:664066500074:web:8bb60cbb1fc8094b0e7e93",
+  measurementId: "G-R5MGD3Z9F2"
+};
+let firebaseApp=null, firebaseAnalytics=null;
+function initFirebase(){
+  try{
+    if(window.firebase && window.firebase.initializeApp && !firebaseApp){
+      firebaseApp = firebase.initializeApp(firebaseConfig);
+      firebaseAnalytics = firebase.analytics();
+    }
+  }catch(e){ console.warn('Firebase no se pudo inicializar en este entorno:', e); }
+}
+
+/* ============================== MAZO Y REGLAS BASE ============================== */
+const SUITS=['espada','basto','oro','copa'];
+const RANKS=[1,2,3,4,5,6,7,10,11,12];
+const RANK_LABEL={1:'1',2:'2',3:'3',4:'4',5:'5',6:'6',7:'7',10:'10',11:'11',12:'12'};
+const SUIT_NAME={espada:'espada', basto:'basto', oro:'oro', copa:'copa'};
+
+function makeDeck(){ const d=[]; SUITS.forEach(s=>RANKS.forEach(r=>d.push({rank:r,suit:s,id:r+'-'+s}))); return d; }
+function shuffle(arr){ const a=arr.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function cardStrength(c){
+  const {rank,suit}=c;
+  if(rank===1&&suit==='espada')return 14; if(rank===1&&suit==='basto')return 13;
+  if(rank===7&&suit==='espada')return 12; if(rank===7&&suit==='oro')return 11;
+  if(rank===3)return 10; if(rank===2)return 9; if(rank===1)return 8;
+  if(rank===12)return 7; if(rank===11)return 6; if(rank===10)return 5;
+  if(rank===7)return 4; if(rank===6)return 3; if(rank===5)return 2; return 1;
+}
+function envidoVal(rank){ return rank>=10?0:rank; }
+function computeEnvido(hand){
+  const bySuit={}; hand.forEach(c=>{ (bySuit[c.suit]=bySuit[c.suit]||[]).push(c); });
+  let best=0, found=false;
+  Object.values(bySuit).forEach(list=>{
+    if(list.length>=2){ found=true; const vals=list.map(c=>envidoVal(c.rank)).sort((a,b)=>b-a); const sum=vals[0]+vals[1]+20; if(sum>best) best=sum; }
+  });
+  if(!found) best=Math.max(...hand.map(c=>envidoVal(c.rank)));
+  return best;
+}
+function hasFlor(hand){ return hand.length===3 && hand[0].suit===hand[1].suit && hand[1].suit===hand[2].suit; }
+function computeFlor(hand){ return hand.reduce((s,c)=>s+envidoVal(c.rank),0)+20; }
+function computeChain(chain, scores, target, inc, faltaType){
+  let sumBefore=0; for(let i=0;i<chain.length-1;i++){ sumBefore+=inc[chain[i]]||0; }
+  const declined=Math.max(1,sumBefore); const lastType=chain[chain.length-1];
+  let accepted;
+  if(lastType===faltaType){ const loser=Math.min(scores[0],scores[1]); accepted=Math.max(1,target-loser); }
+  else accepted = sumBefore + (inc[lastType]||0);
+  return {accepted, declined};
+}
+/* rw: array de 3 (team ganador 0/1 o 'tie' o null). manoFallback: team (0/1) que gana si todo empata. */
+function determineHandWinner(rw, manoFallback){
+  const [a,b,c]=rw;
+  if(a!==null && a!=='tie'){
+    if(b===a) return a;
+    if(b==='tie') return a;
+    if(b!==null && b!==a){
+      if(c!==null && c!=='tie') return c;
+      if(c==='tie') return a;
+      return null;
+    }
+    return null;
+  }
+  if(a==='tie'){
+    if(b!==null && b!=='tie') return b;
+    if(b==='tie'){
+      if(c!==null && c!=='tie') return c;
+      if(c==='tie') return manoFallback;
+      return null;
+    }
+    return null;
+  }
+  return null;
+}
+
+/* ============================== EQUIPOS ============================== */
+function teamOf(seat){ return seat%2; }
+function teamSeats(numPlayers, team){ const s=[]; for(let i=0;i<numPlayers;i++) if(teamOf(i)===team) s.push(i); return s; }
+function teamBestEnvido(g, team){ return Math.max(...teamSeats(g.numPlayers, team).map(s=>computeEnvido(g.hands[s]))); }
+function teamHasFlor(g, team){ return teamSeats(g.numPlayers, team).some(s=>g.florHas[s]); }
+function teamBestFlor(g, team){ const seats=teamSeats(g.numPlayers, team).filter(s=>g.florHas[s]); return Math.max(...seats.map(s=>computeFlor(g.hands[s]))); }
+function nextActiveSeat(g, from){
+  const n=g.numPlayers; let i=from;
+  for(let k=0;k<n;k++){ i=(i+1)%n; if(!g.folded.includes(i)) return i; }
+  return from;
+}
+
+/* ============================== ICONOS / RENDER DE CARTAS ============================== */
+const SUIT_PATHS = {
+  oro: '<circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="2.2"/><circle cx="12" cy="12" r="3.2" fill="currentColor"/>',
+  copa: '<path d="M5.5 3.5h13l-1.6 7.2a5.9 5.9 0 01-9.8 0L5.5 3.5z" fill="currentColor"/><rect x="11" y="14.5" width="2" height="4.3" fill="currentColor"/><rect x="7.8" y="18.8" width="8.4" height="2" rx="1" fill="currentColor"/>',
+  espada: '<path d="M12 2.2l1.7 9.3-1.7 2.3-1.7-2.3L12 2.2z" fill="currentColor"/><rect x="6.6" y="12" width="10.8" height="2.1" rx="1" fill="currentColor"/><rect x="11" y="13.8" width="2" height="8" fill="currentColor"/>',
+  basto: '<rect x="10.3" y="3" width="3.4" height="18.4" rx="1.7" fill="currentColor"/><circle cx="12" cy="5.2" r="3.3" fill="currentColor"/>'
+};
+const SUIT_PALETTE = {
+  espada:{base:'#1c2b4a', accent:'#5b8fc9'},
+  basto:{base:'#2e5c34', accent:'#5c9a4f'},
+  oro:{base:'#a9781f', accent:'#caa24b'},
+  copa:{base:'#7a2727', accent:'#c96a6a'}
+};
+const LEAF_COLORS=['#c65a9e','#3fae9e','#e3b23c','#8a6fc9','#3fae9e','#c65a9e'];
+function suitIcon(suit){ return `<svg width="22" height="22" viewBox="0 0 24 24" class="icon">${SUIT_PATHS[suit]}</svg>`; }
+function leaf(x,y,rot,scale,color){
+  return `<g transform="translate(${x},${y}) rotate(${rot}) scale(${scale})" fill="${color}"><path d="M0,0 C4,-7 12,-7 16,0 C12,7 4,7 0,0 Z"/></g>`;
+}
+function cardArtSVG(card){
+  const pal = SUIT_PALETTE[card.suit];
+  const lbl = RANK_LABEL[card.rank];
+  const leafSpots = [
+    [30,52,-25,0],[110,52,25,1],[24,140,-70,2],[116,140,70,3],[22,95,10,4],[118,95,-10,5]
+  ];
+  const leaves = leafSpots.map(([x,y,rot,ci])=>leaf(x,y,rot,0.9,LEAF_COLORS[ci])).join('');
+  const cornerPip = `<text x="0" y="13" font-family="Fraunces,serif" font-weight="700" font-size="15" fill="#20201a">${lbl}</text><g transform="translate(-1,17) scale(0.55)" style="color:${pal.accent}">${SUIT_PATHS[card.suit]}</g>`;
+  return `<svg viewBox="0 0 140 200" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" width="100%" height="100%">
+    <rect x="1" y="1" width="138" height="198" rx="10" fill="#f3ecd6" stroke="rgba(0,0,0,.18)"/>
+    <g transform="translate(10,10)">${cornerPip}</g>
+    <g transform="translate(130,190) rotate(180)">${cornerPip}</g>
+    ${leaves}
+    <g transform="translate(70,92) scale(3.4) translate(-12,-12)" style="color:${pal.base}">${SUIT_PATHS[card.suit]}</g>
+    <circle cx="70" cy="164" r="19" fill="#c9a24b" stroke="#7a5a1f" stroke-width="1.4"/>
+    <circle cx="70" cy="164" r="15.5" fill="none" stroke="#7a5a1f" stroke-width="0.7"/>
+    <text x="70" y="161" text-anchor="middle" font-family="Fraunces,serif" font-weight="700" font-size="6.5" fill="#3a2a10">DS</text>
+    <text x="70" y="169" text-anchor="middle" font-family="Fraunces,serif" font-weight="700" font-size="5.5" fill="#3a2a10">TRUCO</text>
+  </svg>`;
+}
+const CARD_ART = {
+  '1-basto': '/_blob/28718043adace68c7288deebc61aa258'
+};
+function cardHTML(card, extraClass, dataAttr){
+  if(!card) return '';
+  const art = CARD_ART[card.id];
+  if(art){
+    return `<div class="card art-card ${extraClass||''}" ${dataAttr||''} style="background-image:url('${art}')"></div>`;
+  }
+  return `<div class="card ${extraClass||''}" ${dataAttr||''}>${cardArtSVG(card)}</div>`;
+}
+function esc(s){ return (s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+/* ============================== SONIDO ============================== */
+let audioCtx=null, audioPrimed=false;
+function getAudioCtx(){
+  if(!audioCtx){ try{ audioCtx = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} }
+  return audioCtx;
+}
+function primeAudio(){
+  if(audioPrimed) return; audioPrimed=true;
+  const ctx=getAudioCtx();
+  if(ctx && ctx.state==='suspended'){ ctx.resume().catch(()=>{}); }
+  try{ if('speechSynthesis' in window){ window.speechSynthesis.speak(new SpeechSynthesisUtterance('')); } }catch(e){}
+}
+document.addEventListener('click', primeAudio, {once:true});
+document.addEventListener('touchstart', primeAudio, {once:true});
+function playCardSound(){
+  const ctx=getAudioCtx(); if(!ctx) return;
+  if(ctx.state==='suspended'){ ctx.resume().catch(()=>{}); }
+  const now=ctx.currentTime;
+  const dur=0.09;
+  const bufferSize=Math.floor(ctx.sampleRate*dur);
+  const buffer=ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+  const data=buffer.getChannelData(0);
+  for(let i=0;i<bufferSize;i++){ data[i]=(Math.random()*2-1)*Math.pow(1-i/bufferSize,2.2); }
+  const noise=ctx.createBufferSource(); noise.buffer=buffer;
+  const bp=ctx.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=2400; bp.Q.value=0.8;
+  const gain=ctx.createGain(); gain.gain.setValueAtTime(0.55, now); gain.gain.exponentialRampToValueAtTime(0.001, now+dur);
+  noise.connect(bp); bp.connect(gain); gain.connect(ctx.destination);
+  noise.start(now); noise.stop(now+dur+0.02);
+}
+let spanishVoice=null;
+function pickSpanishVoice(){
+  try{
+    const voices=window.speechSynthesis.getVoices();
+    spanishVoice = voices.find(v=>/^es-AR/i.test(v.lang)) || voices.find(v=>/^es/i.test(v.lang)) || null;
+  }catch(e){}
+}
+if('speechSynthesis' in window){
+  pickSpanishVoice();
+  window.speechSynthesis.onvoiceschanged = pickSpanishVoice;
+}
+function speakPhrase(text){
+  try{
+    if(!('speechSynthesis' in window) || !text) return;
+    window.speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(text);
+    u.lang='es-AR'; u.rate=1.05; u.pitch=1.0;
+    if(spanishVoice) u.voice=spanishVoice;
+    window.speechSynthesis.speak(u);
+  }catch(e){}
+}
+
+function showCallBanner(text, who, kind){
+  let el=document.getElementById('callBanner');
+  if(!el){ el=document.createElement('div'); el.id='callBanner'; el.className='call-banner'; document.body.appendChild(el); }
+  el.innerHTML = `<div class="cb-who">${esc(who)}</div><div class="cb-text">${esc(text)}</div>`;
+  el.classList.remove('show','cb-call','cb-accept','cb-decline'); void el.offsetWidth;
+  el.classList.add('show', kind==='accept'?'cb-accept':kind==='decline'?'cb-decline':'cb-call');
+  clearTimeout(showCallBanner._t);
+  showCallBanner._t = setTimeout(()=>{ el.classList.remove('show'); }, 1700);
+}
+function parseCallOrResponse(msg){
+  const idx = msg.indexOf(' canta ');
+  if(idx>=0){
+    const who=msg.slice(0,idx);
+    let rest=msg.slice(idx+7);
+    let callName=rest.split('(')[0].trim();
+    if(callName.endsWith('.')) callName=callName.slice(0,-1);
+    return callName?{who,text:'¡'+callName+'!',kind:'call',spoken:who+' canta '+callName}:null;
+  }
+  if(msg.indexOf(' no quiere')>=0){
+    const who=msg.slice(0, msg.indexOf(' no quiere'));
+    return {who, text:'¡No quiero!', kind:'decline', spoken:who+' no quiere'};
+  }
+  if(msg.indexOf(' quiere')>=0){
+    const who=msg.slice(0, msg.indexOf(' quiere'));
+    return {who, text:'¡Quiero!', kind:'accept', spoken:who+' quiere'};
+  }
+  return null;
+}
+function checkForCallBanner(g){
+  const seq = g._logSeq||0;
+  const logArr = g.log||[];
+  const newCount = Math.max(0, Math.min(seq-lastSeenLogSeq, logArr.length));
+  lastSeenLogSeq = seq;
+  if(newCount<=0) return;
+  const newMsgs = logArr.slice(-newCount);
+  let toShow=null;
+  newMsgs.forEach(m=>{
+    if(m.indexOf(' jugó ')>=0){ playCardSound(); return; }
+    const r=parseCallOrResponse(m); if(r) toShow=r;
+  });
+  if(toShow){ showCallBanner(toShow.text, toShow.who, toShow.kind); speakPhrase(toShow.spoken); }
+}
+function genCode(){ const chars='ABCDEFGHJKMNPQRSTUVWXYZ23456789'; let s=''; for(let i=0;i<4;i++) s+=chars[Math.floor(Math.random()*chars.length)]; return s; }
+function initials(name){ return (name||'?').trim().slice(0,2).toUpperCase(); }
+
+const INTRO_VIDEO_URL = '/_blob/ba906d0a5dce27f44349aabe6821b686';
+
+/* ============================== ESTADO LOCAL ============================== */
+let db=null, userCap=null;
+let myId=null, myName='';
+let roomCode=null;
+let game=null;
+let unsub=null;
+let view='splash'; // splash | landing | waiting | game | dberror
+let joinTab=false;
+let joinCodeInput='';
+let nameInput='';
+let createTarget=null, createNumPlayers=null, cpuTarget=null;
+let busy=false;
+let localError='';
+let gameMode='online'; // 'online' | 'cpu'
+let mySeat=0; // fijo en modo cpu
+let lastSeenLogSeq=0;
+
+try{ nameInput = localStorage.getItem('ds_truco_name') || ''; }catch(e){}
+
+/* ============================== REDUCTORES PUROS (reciben seat explícito) ============================== */
+function dealNewHand(g){
+  const deck=shuffle(makeDeck());
+  g.hands = Array.from({length:g.numPlayers}, (_,i)=>deck.slice(i*3,i*3+3));
+  g.table=[[],[],[]]; g.round=0; g.roundWinners=[null,null,null]; g.folded=[];
+  const mano=(g.dealer+1)%g.numPlayers;
+  g.mano=mano; g.turn=mano; g.turnPhase='play';
+  g.trucoState={level:0, status:'idle', calledBy:null, pendingTeam:null, acceptedValue:1};
+  g.florHas = g.hands.map(h=>hasFlor(h));
+  g.envido={chain:[], status:'idle', pendingTeam:null, lastCallerTeam:null, resolved:false, result:null};
+  g.flor={chain:[], status:'idle', pendingTeam:null, lastCallerTeam:null, resolved:false, result:null};
+  g.handWinner=null;
+  pushLog(g, 'Nueva mano. Reparte '+g.players[g.dealer].name+'.');
+}
+function pushLog(g, msg){ g.log=(g.log||[]).slice(-8).concat([msg]); g._logSeq=(g._logSeq||0)+1; }
+
+function finishHand(g, winnerTeam, points, reason){
+  g.scores[winnerTeam]+=points;
+  const tn = teamName(g, winnerTeam);
+  pushLog(g, tn+' se lleva la mano ('+points+' pto'+(points>1?'s':'')+(reason?' · '+reason:'')+').');
+  if(g.scores[winnerTeam]>=g.targetScore){
+    g.status='finished'; g.gameWinner=winnerTeam; g.turnPhase='over';
+    pushLog(g, '¡'+tn+' gana la partida!');
+  } else {
+    g.dealer=(g.dealer+1)%g.numPlayers;
+    dealNewHand(g);
+  }
+}
+function teamName(g, team){
+  const names = teamSeats(g.numPlayers, team).map(s=>g.players[s].name);
+  return names.join(' y ');
+}
+
+function resolveRoundIfComplete(g){
+  const activeCount = g.numPlayers - g.folded.length;
+  if(g.table[g.round].length < activeCount) return;
+  const plays = g.table[g.round];
+  const maxS = Math.max(...plays.map(p=>cardStrength(p.card)));
+  const winners = plays.filter(p=>cardStrength(p.card)===maxS);
+  const teams = new Set(winners.map(p=>teamOf(p.by)));
+  const roundWinner = teams.size===1 ? teamOf(winners[0].by) : 'tie';
+  g.roundWinners[g.round] = roundWinner;
+  const decided = determineHandWinner(g.roundWinners, teamOf(g.mano));
+  if(decided!==null){ finishHand(g, decided, g.trucoState.acceptedValue); return; }
+  const finishedRound = g.round;
+  g.round++;
+  if(g.roundWinners[finishedRound]==='tie'){
+    g.turn = g.table[finishedRound][0].by;
+  } else {
+    const w = g.roundWinners[finishedRound];
+    const cand = g.table[finishedRound].filter(p=>teamOf(p.by)===w);
+    const top = cand.reduce((best,p)=> cardStrength(p.card)>cardStrength(best.card)?p:best, cand[0]);
+    g.turn = top.by;
+  }
+}
+
+function rPlayCard(g, seat, cardId){
+  if(g.turn!==seat || g.turnPhase!=='play') return;
+  const hand=g.hands[seat]; const idx=hand.findIndex(c=>c.id===cardId);
+  if(idx<0) return;
+  const [card]=hand.splice(idx,1);
+  g.table[g.round].push({by:seat, card});
+  pushLog(g, g.players[seat].name+' jugó '+RANK_LABEL[card.rank]+' de '+SUIT_NAME[card.suit]+'.');
+  if(g.table[g.round].length < g.numPlayers - g.folded.length){
+    g.turn = nextActiveSeat(g, seat);
+  }
+  resolveRoundIfComplete(g);
+}
+function rCallTruco(g, seat){
+  if(g.turn!==seat || g.turnPhase!=='play' || g.trucoState.status!=='idle' || g.trucoState.level>=3) return;
+  const names=['Truco','Retruco','Vale Cuatro']; const values=[2,3,4];
+  const nextLevel=g.trucoState.level+1;
+  g.trucoState.pendingLevel=nextLevel; g.trucoState.pendingValue=values[nextLevel-1];
+  g.trucoState.status='pending'; g.trucoState.calledBy=seat; g.trucoState.pendingTeam=1-teamOf(seat);
+  g.turnPhase='respond-truco';
+  pushLog(g, g.players[seat].name+' canta '+names[nextLevel-1]+'.');
+}
+function rRespondTruco(g, seat, accept){
+  if(g.trucoState.pendingTeam!==teamOf(seat)) return;
+  if(accept){
+    g.trucoState.level=g.trucoState.pendingLevel; g.trucoState.acceptedValue=g.trucoState.pendingValue;
+    g.trucoState.status='idle'; g.trucoState.pendingTeam=null; g.turnPhase='play';
+    pushLog(g, g.players[seat].name+' quiere. Mano vale '+g.trucoState.acceptedValue+'.');
+  } else {
+    pushLog(g, g.players[seat].name+' no quiere.');
+    finishHand(g, teamOf(g.trucoState.calledBy), g.trucoState.acceptedValue, 'no quisieron el truco');
+  }
+}
+function rCallEnvido(g, seat, type){
+  if(g.round!==0 || g.envido.resolved) return;
+  if(g.envido.status==='idle' && g.turn!==seat) return;
+  if(g.envido.status==='pending' && g.envido.pendingTeam!==teamOf(seat)) return;
+  if((teamHasFlor(g,0)||teamHasFlor(g,1)) && !g.flor.resolved) return; // la flor se resuelve antes que el envido
+  if(g.trucoState.status==='pending') return;
+  const chain=g.envido.chain; const last=chain[chain.length-1];
+  const order=['envido','envido2','real','falta'];
+  if(chain.length){
+    const li=order.indexOf(last), ti=order.indexOf(type);
+    if(ti<=li) return;
+    if(type==='envido2' && last!=='envido') return;
+  } else if(type==='envido2'){ return; }
+  chain.push(type);
+  g.envido.status='pending'; g.envido.pendingTeam=1-teamOf(seat); g.envido.lastCallerTeam=teamOf(seat);
+  g.turnPhase='respond-envido';
+  const labels={envido:'Envido', envido2:'Envido', real:'Real Envido', falta:'Falta Envido'};
+  pushLog(g, g.players[seat].name+' canta '+labels[type]+'.');
+}
+function rRespondEnvido(g, seat, accept){
+  if(g.envido.pendingTeam!==teamOf(seat)) return;
+  const inc={envido:2, envido2:2, real:3};
+  const {accepted, declined}=computeChain(g.envido.chain, g.scores, g.targetScore, inc, 'falta');
+  if(accept){
+    const e0=teamBestEnvido(g,0), e1=teamBestEnvido(g,1);
+    const winner = e0>=e1?0:1;
+    g.scores[winner]+=accepted; g.envido.resolved=true; g.envido.status='resolved';
+    g.envido.result={points:accepted, winner, e0, e1};
+    pushLog(g, g.players[seat].name+' quiere el envido.');
+    pushLog(g, teamName(g,0)+' '+e0+' - '+teamName(g,1)+' '+e1+'. Gana '+teamName(g,winner)+' ('+accepted+' pts).');
+  } else {
+    const winner=g.envido.lastCallerTeam;
+    g.scores[winner]+=declined; g.envido.resolved=true; g.envido.status='resolved';
+    g.envido.result={points:declined, winner, declined:true};
+    pushLog(g, g.players[seat].name+' no quiere. '+teamName(g,winner)+' suma '+declined+'.');
+  }
+  g.envido.pendingTeam=null; g.turnPhase='play';
+  checkGameEnd(g);
+}
+function rCallFlor(g, seat, type){
+  if(g.round!==0 || g.flor.resolved || !g.florHas[seat]) return;
+  const myTeam=teamOf(seat);
+  const bothHave = teamHasFlor(g,0) && teamHasFlor(g,1);
+  if(!bothHave){
+    g.scores[myTeam]+=3; g.flor.resolved=true; g.flor.status='resolved';
+    g.flor.result={points:3, winner:myTeam, uncontested:true};
+    pushLog(g, g.players[seat].name+' canta Flor (3 pts, sin oposición).');
+    checkGameEnd(g); return;
+  }
+  const chain=g.flor.chain; const last=chain[chain.length-1];
+  const order=['flor','contra','contrafalta'];
+  if(chain.length){ const li=order.indexOf(last), ti=order.indexOf(type); if(ti<=li) return; }
+  chain.push(type);
+  g.flor.status='pending'; g.flor.pendingTeam=1-myTeam; g.flor.lastCallerTeam=myTeam;
+  const labels={flor:'Flor', contra:'Contraflor', contrafalta:'Contraflor al Resto'};
+  pushLog(g, g.players[seat].name+' canta '+labels[type]+'.');
+}
+function rRespondFlor(g, seat, accept){
+  if(g.flor.pendingTeam!==teamOf(seat)) return;
+  const inc={flor:3, contra:3};
+  const {accepted}=computeChain(g.flor.chain, g.scores, g.targetScore, inc, 'contrafalta');
+  if(accept || g.flor.chain[g.flor.chain.length-1]==='flor'){
+    const f0=teamBestFlor(g,0), f1=teamBestFlor(g,1);
+    const winner=f0>=f1?0:1;
+    g.scores[winner]+=accepted; g.flor.resolved=true; g.flor.status='resolved';
+    g.flor.result={points:accepted, winner, f0, f1};
+    pushLog(g, g.players[seat].name+' quiere comparar la flor.');
+    pushLog(g, teamName(g,0)+' '+f0+' - '+teamName(g,1)+' '+f1+' de flor. Gana '+teamName(g,winner)+' ('+accepted+' pts).');
+  }
+  g.flor.pendingTeam=null;
+  checkGameEnd(g);
+}
+function checkGameEnd(g){
+  if(g.scores[0]>=g.targetScore || g.scores[1]>=g.targetScore){
+    const w = g.scores[0]>=g.targetScore?0:1;
+    g.status='finished'; g.gameWinner=w; g.turnPhase='over';
+    pushLog(g, '¡'+teamName(g,w)+' gana la partida!');
+  }
+}
+function rMazo(g, seat){
+  if(g.turn!==seat || g.turnPhase!=='play') return;
+  g.folded.push(seat);
+  pushLog(g, g.players[seat].name+' se va al mazo.');
+  const myTeam=teamOf(seat);
+  const teammatesLeft = teamSeats(g.numPlayers, myTeam).some(s=>!g.folded.includes(s));
+  if(!teammatesLeft){
+    finishHand(g, 1-myTeam, g.trucoState.acceptedValue, 'se fueron al mazo');
+    return;
+  }
+  g.turn = nextActiveSeat(g, seat);
+  resolveRoundIfComplete(g);
+}
+
+/* ============================== CAPACIDADES / CONEXIÓN ============================== */
+async function init(){
+  try{
+    const claudeReady = typeof window.claude!=='undefined';
+    db = claudeReady ? await window.claude.use('db') : null;
+    userCap = claudeReady ? await window.claude.use('user') : null;
+    if(userCap){ myId = await userCap.id(); }
+  }catch(e){ db=null; }
+  initFirebase();
+  if(!firebaseApp){ window.addEventListener('load', initFirebase, {once:true}); setTimeout(initFirebase, 1500); }
+  render();
+}
+
+/* ============================== FLUJO ONLINE ============================== */
+async function createRoom(numPlayers, target){
+  if(busy) return;
+  if(!db || !myId){ view='dberror'; render(); return; }
+  busy=true; localError=''; render();
+  try{
+    const name=(nameInput||'Jugador').trim().slice(0,18);
+    try{ localStorage.setItem('ds_truco_name', name); }catch(e){}
+    let code=genCode();
+    for(let tries=0; tries<3; tries++){
+      const snap=await db.doc('games/'+code).get();
+      if(!snap.exists) break;
+      code=genCode();
+    }
+    const initialGame={
+      code, status:'waiting', targetScore:target, numPlayers,
+      createdAt:Date.now(),
+      players:[{id:myId, name}],
+      scores:[0,0], dealer:0,
+      hands:Array.from({length:numPlayers},()=>[]),
+      table:[[],[],[]], round:0, turn:0, folded:[],
+      roundWinners:[null,null,null],
+      trucoState:{level:0, status:'idle', calledBy:null, pendingTeam:null, acceptedValue:1},
+      envido:{chain:[], status:'idle', pendingTeam:null, resolved:false, result:null},
+      flor:{chain:[], status:'idle', pendingTeam:null, resolved:false, result:null}, florHas:Array(numPlayers).fill(false),
+      turnPhase:'wait',
+      log:['Sala creada. Esperando jugadores ('+numPlayers+' en total)…'],
+      handWinner:null, gameWinner:null, rematchVotes:[]
+    };
+    await db.doc('games/'+code).set(initialGame);
+    roomCode=code; gameMode='online';
+    subscribeRoom(); view='waiting';
+  }catch(e){ localError='No se pudo crear la sala. Probá de nuevo.'; }
+  busy=false; render();
+}
+async function joinRoom(code){
+  if(busy) return;
+  if(!db || !myId){ view='dberror'; render(); return; }
+  code=(code||'').trim().toUpperCase();
+  if(!code){ localError='Ingresá un código de sala.'; render(); return; }
+  busy=true; localError=''; render();
+  try{
+    const name=(nameInput||'Jugador').trim().slice(0,18);
+    try{ localStorage.setItem('ds_truco_name', name); }catch(e){}
+    const ref=db.doc('games/'+code);
+    const lease=await ref.acquire({holder:myId, ttlMs:4000});
+    if(!lease.acquired){ localError='La sala está ocupada, probá de nuevo en un segundo.'; busy=false; render(); return; }
+    const snap=await ref.get();
+    if(!snap.exists){ localError='No existe una sala con ese código.'; busy=false; render(); return; }
+    const g=snap.data();
+    const already=g.players.find(p=>p.id===myId);
+    if(already){
+      roomCode=code; gameMode='online'; subscribeRoom();
+      view=g.status==='waiting'?'waiting':'game'; busy=false; render(); return;
+    }
+    if(g.players.length>=g.numPlayers){ localError='Esa sala ya está completa.'; busy=false; render(); return; }
+    g.players.push({id:myId, name});
+    g.log=(g.log||[]).concat([name+' se unió ('+g.players.length+'/'+g.numPlayers+').']);
+    if(g.players.length===g.numPlayers){
+      g.status='playing';
+      dealNewHand(g);
+    }
+    await ref.set(g);
+    roomCode=code; gameMode='online'; subscribeRoom();
+    view = g.status==='playing' ? 'game' : 'waiting';
+  }catch(e){ localError='No se pudo unir a la sala. Probá de nuevo.'; }
+  busy=false; render();
+}
+function subscribeRoom(){
+  if(unsub) unsub();
+  lastSeenLogSeq=0;
+  unsub=db.doc('games/'+roomCode).onSnapshot(snap=>{
+    if(!snap.exists) return;
+    game=snap.data();
+    view = game.status==='waiting' ? 'waiting' : 'game';
+    render();
+  }, err=>{ localError='Se perdió la conexión con la sala.'; render(); });
+}
+function myIndex(){ if(!game) return -1; return game.players.findIndex(p=>p.id===myId); }
+
+/* ============================== FLUJO CPU (local) ============================== */
+function startCpuGame(target){
+  const name=(nameInput||'Vos').trim().slice(0,18) || 'Vos';
+  try{ localStorage.setItem('ds_truco_name', name); }catch(e){}
+  gameMode='cpu'; mySeat=0; lastSeenLogSeq=0;
+  game={
+    code:'CPU', status:'playing', targetScore:target, numPlayers:2,
+    players:[{id:'human', name, isCPU:false},{id:'cpu', name:'La Máquina', isCPU:true}],
+    scores:[0,0], dealer:0,
+    hands:[[],[]], table:[[],[],[]], round:0, turn:0, folded:[],
+    roundWinners:[null,null,null],
+    trucoState:{level:0, status:'idle', calledBy:null, pendingTeam:null, acceptedValue:1},
+    envido:{chain:[], status:'idle', pendingTeam:null, resolved:false, result:null},
+    flor:{chain:[], status:'idle', pendingTeam:null, resolved:false, result:null}, florHas:[false,false],
+    turnPhase:'wait', log:[], handWinner:null, gameWinner:null, rematchVotes:[]
+  };
+  dealNewHand(game);
+  view='game';
+  render();
+  scheduleCpu();
+}
+
+/* ============================== ESCRITURA GENERICA ============================== */
+async function commit(mutator){
+  if(!game || busy) return;
+  busy=true;
+  if(gameMode==='cpu'){
+    const g=JSON.parse(JSON.stringify(game));
+    mutator(g, mySeat);
+    game=g; busy=false; render(); scheduleCpu();
+    return;
+  }
+  const mi=myIndex();
+  if(mi<0){ busy=false; return; }
+  const g=JSON.parse(JSON.stringify(game));
+  try{ mutator(g, mi); await db.doc('games/'+roomCode).set(g); }catch(e){}
+  busy=false;
+}
+
+function playCard(cardId){ commit((g,seat)=>rPlayCard(g,seat,cardId)); }
+function callTruco(){ commit((g,seat)=>rCallTruco(g,seat)); }
+function respondTruco(accept){ commit((g,seat)=>rRespondTruco(g,seat,accept)); }
+function callEnvidoType(type){ commit((g,seat)=>rCallEnvido(g,seat,type)); }
+function respondEnvido(accept){ commit((g,seat)=>rRespondEnvido(g,seat,accept)); }
+function callFlorType(type){ commit((g,seat)=>rCallFlor(g,seat,type)); }
+function respondFlor(accept){ commit((g,seat)=>rRespondFlor(g,seat,accept)); }
+function irseAlMazo(){ commit((g,seat)=>rMazo(g,seat)); }
+function requestRematch(){
+  commit((g,seat)=>{
+    const team=teamOf(seat);
+    g.rematchVotes=Array.from(new Set((g.rematchVotes||[]).concat([team])));
+    if(gameMode==='cpu' || g.rematchVotes.length>=2){
+      g.scores=[0,0]; g.dealer=0; g.status='playing'; g.gameWinner=null; g.rematchVotes=[];
+      dealNewHand(g); pushLog(g,'¡Revancha! Arranca una nueva partida.');
+    } else { pushLog(g, g.players[seat].name+' quiere revancha.'); }
+  });
+}
+
+/* ============================== CPU: IA SENCILLA ============================== */
+function handStrengthAvg(hand){ return hand.reduce((s,c)=>s+cardStrength(c),0) / Math.max(1,hand.length); }
+function scheduleCpu(){
+  if(gameMode!=='cpu' || !game || game.status!=='playing') return;
+  const g=game;
+  const cpuTeam=1;
+  let delay=750+Math.random()*500;
+  if(g.trucoState.status==='pending' && g.trucoState.pendingTeam===cpuTeam){
+    setTimeout(()=>{ const avg=handStrengthAvg(g.hands[1]); const accept = avg>=6.5 || Math.random()<0.25; commit((gg,s)=>rRespondTruco(gg,1,accept)); }, delay);
+    return;
+  }
+  if(g.envido.status==='pending' && g.envido.pendingTeam===cpuTeam){
+    setTimeout(()=>{ const val=teamBestEnvido(g,1); commit((gg,s)=>rRespondEnvido(gg,1, val>=23)); }, delay);
+    return;
+  }
+  if(g.flor.status==='pending' && g.flor.pendingTeam===cpuTeam){
+    setTimeout(()=>{ commit((gg,s)=>rRespondFlor(gg,1,true)); }, delay);
+    return;
+  }
+  if(g.round===0 && g.florHas[1] && !g.flor.resolved && g.flor.chain.length===0){
+    setTimeout(()=>{ commit((gg,s)=>rCallFlor(gg,1,'flor')); }, delay);
+    return;
+  }
+  if(g.turnPhase==='play' && g.turn===1){
+    setTimeout(()=>{
+      commit((gg,s)=>{
+        const avg=handStrengthAvg(gg.hands[1]);
+        if(gg.round===0 && !gg.envido.resolved && !(gg.florHas.some(Boolean)&&!gg.flor.resolved) && teamBestEnvido(gg,1)>=29 && Math.random()<0.6){
+          rCallEnvido(gg,1,'envido'); return;
+        }
+        if(gg.trucoState.status==='idle' && gg.trucoState.level<3 && avg>=8.5 && Math.random()<0.35){
+          rCallTruco(gg,1); return;
+        }
+        cpuPlayCard(gg);
+      });
+    }, delay);
+  }
+}
+function cpuPlayCard(g){
+  const hand=g.hands[1];
+  const sorted=hand.slice().sort((a,b)=>cardStrength(a)-cardStrength(b));
+  const plays=g.table[g.round];
+  if(plays.length===0){
+    rPlayCard(g,1,sorted[0].id); return;
+  }
+  const bestOnTable=Math.max(...plays.map(p=>cardStrength(p.card)));
+  const winning=sorted.filter(c=>cardStrength(c)>bestOnTable);
+  if(winning.length){ rPlayCard(g,1,winning[0].id); }
+  else { rPlayCard(g,1,sorted[0].id); }
+}
+
+/* ============================== ACCIONES DISPONIBLES (UI) ============================== */
+function availableActions(g, seat){
+  const acts=[];
+  if(!g || seat<0 || g.status!=='playing') return acts;
+  const isMyTurn=g.turn===seat && g.turnPhase==='play';
+  const myTeam=teamOf(seat);
+  if(g.turnPhase==='respond-truco' && g.trucoState.pendingTeam===myTeam){
+    return [{k:'truco-yes',label:'Quiero',cls:'accept'},{k:'truco-no',label:'No quiero',cls:'decline'}];
+  }
+  if(g.turnPhase==='respond-envido' && g.envido.pendingTeam===myTeam){
+    const order=['envido','envido2','real','falta']; const last=g.envido.chain[g.envido.chain.length-1]; const li=order.indexOf(last);
+    const opts=[{k:'env-yes',label:'Quiero',cls:'accept'}];
+    if(li<order.indexOf('envido2') && last==='envido') opts.push({k:'env-envido2',label:'Envido',cls:'envido'});
+    if(li<order.indexOf('real')) opts.push({k:'env-real',label:'Real Envido',cls:'envido'});
+    if(li<order.indexOf('falta')) opts.push({k:'env-falta',label:'Falta Envido',cls:'envido'});
+    opts.push({k:'env-no',label:'No quiero',cls:'decline'});
+    return opts;
+  }
+  if(g.flor.pendingTeam===myTeam && g.flor.status==='pending'){
+    const order=['flor','contra','contrafalta']; const last=g.flor.chain[g.flor.chain.length-1]; const li=order.indexOf(last);
+    const opts=[{k:'flor-yes',label:'Comparar',cls:'accept'}];
+    if(li<order.indexOf('contra')) opts.push({k:'flor-contra',label:'Contraflor',cls:'flor'});
+    if(li<order.indexOf('contrafalta')) opts.push({k:'flor-contrafalta',label:'Contraflor al Resto',cls:'flor'});
+    return opts;
+  }
+  if(g.turnPhase!=='play') return acts;
+  const florAvail = g.round===0 && g.florHas[seat] && !g.flor.resolved && g.flor.chain.length===0;
+  if(isMyTurn){
+    if(g.trucoState.level<3) acts.push({k:'truco', label:g.trucoState.level===0?'Truco':g.trucoState.level===1?'Retruco':'Vale Cuatro', cls:'truco'});
+    const florPending = g.florHas.some(Boolean) && !g.flor.resolved;
+    if(g.round===0 && !g.envido.resolved && !florPending) acts.push({k:'envido', label:'Envido', cls:'envido'});
+    if(florAvail) acts.push({k:'flor', label:'Flor', cls:'flor'});
+    acts.push({k:'mazo', label:'Me voy al mazo', cls:'mazo'});
+  } else if(florAvail){
+    acts.push({k:'flor', label:'Flor', cls:'flor'});
+  }
+  return acts;
+}
+function handleAction(key){
+  if(key==='truco') callTruco();
+  else if(key==='truco-yes') respondTruco(true);
+  else if(key==='truco-no') respondTruco(false);
+  else if(key==='envido') callEnvidoType('envido');
+  else if(key==='env-envido2') callEnvidoType('envido2');
+  else if(key==='env-real') callEnvidoType('real');
+  else if(key==='env-falta') callEnvidoType('falta');
+  else if(key==='env-yes') respondEnvido(true);
+  else if(key==='env-no') respondEnvido(false);
+  else if(key==='flor') callFlorType('flor');
+  else if(key==='flor-contra') callFlorType('contra');
+  else if(key==='flor-contrafalta') callFlorType('contrafalta');
+  else if(key==='flor-yes') respondFlor(true);
+  else if(key==='mazo') irseAlMazo();
+}
+function pendingBanner(g, seat){
+  const myTeam=teamOf(seat);
+  if(g.turnPhase==='respond-truco'){
+    const names=['Truco','Retruco','Vale Cuatro'];
+    if(g.trucoState.pendingTeam===myTeam) return {msg:'Cantaron '+names[g.trucoState.pendingLevel-1]+'. ¿Qué hacés?'};
+    return {msg:'Esperando respuesta al truco…'};
+  }
+  if(g.turnPhase==='respond-envido'){
+    if(g.envido.pendingTeam===myTeam) return {msg:'Te cantaron envido. ¿Qué hacés?'};
+    return {msg:'Esperando respuesta de envido…'};
+  }
+  if(g.flor.status==='pending'){
+    if(g.flor.pendingTeam===myTeam) return {msg:'Te cantaron flor. ¿Comparás o escalás?'};
+    return {msg:'Esperando respuesta de flor…'};
+  }
+  return null;
+}
+
+/* ============================== RENDER ============================== */
+function render(){
+  const app=document.getElementById('app');
+
+  if(view==='splash'){
+    app.innerHTML = `
+      <div class="splash-video">
+        <video id="introVid" autoplay muted playsinline webkit-playsinline src="${INTRO_VIDEO_URL}"></video>
+        <button class="skip-video" id="skipIntro">Saltar ▸</button>
+      </div>`;
+    const vid=document.getElementById('introVid');
+    const goLanding=()=>{ if(view==='splash'){ view='landing'; render(); } };
+    vid.addEventListener('ended', goLanding);
+    vid.addEventListener('error', ()=>{ view='splash-fallback'; render(); });
+    document.getElementById('skipIntro').onclick=goLanding;
+    return;
+  }
+
+  if(view==='splash-fallback'){
+    app.innerHTML = `
+      <div class="splash" id="splashTap">
+        <div class="cards-fan">
+          ${cardHTML({rank:1,suit:'espada'})}${cardHTML({rank:7,suit:'oro'})}${cardHTML({rank:3,suit:'copa'})}${cardHTML({rank:12,suit:'basto'})}
+        </div>
+        <h1>🃏 DS Truco</h1>
+        <div class="tag">2 · 4 · 6 jugadores en equipos, o solo contra la máquina</div>
+        <div class="skip">Tocá para continuar</div>
+      </div>`;
+    document.getElementById('splashTap').onclick=()=>{ view='landing'; render(); };
+    setTimeout(()=>{ if(view==='splash-fallback'){ view='landing'; render(); } }, 2600);
+    return;
+  }
+
+  if(view==='dberror'){
+    app.innerHTML = `
+      <div class="brand"><span class="mark">🃏 DS Truco</span></div>
+      <div class="center-col"><div class="card-panel" style="text-align:center;">
+        <h2>No se pudo iniciar la sala</h2>
+        <p>El multijugador en vivo necesita que estés conectado y dentro de la misma organización de Claude que la persona que creó la partida. Podés seguir jugando en modo 1 jugador contra la máquina.</p>
+        <button class="btn-primary" id="toLanding">Volver</button>
+      </div></div>`;
+    document.getElementById('toLanding').onclick=()=>{ view='landing'; render(); };
+    return;
+  }
+
+  if(view==='landing'){
+    app.innerHTML = `
+      <div class="brand"><span class="mark">🃏 DS Truco</span><span class="sub">truco argentino</span></div>
+      <div class="center-col">
+        <button class="btn-primary" id="cpuBtn" style="margin-top:0;">🤖 Jugar solo contra la máquina</button>
+        <div class="tabs" style="margin-top:22px;">
+          <div class="tab ${joinTab?'':'active'}" id="tab-create">Crear sala</div>
+          <div class="tab ${joinTab?'active':''}" id="tab-join">Unirme</div>
+        </div>
+        <div class="card-panel" id="panel"></div>
+      </div>
+      <div class="footer-note">Truco completo · envido · flor · 2, 4 o 6 jugadores</div>
+    `;
+    document.getElementById('cpuBtn').onclick=()=>{ joinTab='cpu-setup'; render(); };
+    document.getElementById('tab-create').onclick=()=>{ joinTab=false; render(); };
+    document.getElementById('tab-join').onclick=()=>{ joinTab=true; render(); };
+    const panel=document.getElementById('panel');
+
+    if(joinTab==='cpu-setup'){
+      panel.innerHTML = `
+        <label for="nmc">Tu nombre</label>
+        <input type="text" id="nmc" maxlength="18" placeholder="¿Cómo te llamamos?" value="${esc(nameInput)}">
+        <label>¿A cuántos puntos?</label>
+        <div class="choice-group">
+          <button class="choice-btn ${(!cpuTarget||cpuTarget===15)?'active':''}" id="ct15">15</button>
+          <button class="choice-btn ${cpuTarget===30?'active':''}" id="ct30">30</button>
+        </div>
+        <button class="btn-primary" id="startCpu">Empezar a jugar</button>
+      `;
+      document.getElementById('nmc').oninput=e=>{ nameInput=e.target.value; };
+      document.getElementById('ct15').onclick=()=>{ cpuTarget=15; render(); };
+      document.getElementById('ct30').onclick=()=>{ cpuTarget=30; render(); };
+      document.getElementById('startCpu').onclick=()=>startCpuGame(cpuTarget||15);
+      return;
+    }
+
+    if(!joinTab){
+      panel.innerHTML = `
+        <label for="nm1">Tu nombre</label>
+        <input type="text" id="nm1" maxlength="18" placeholder="¿Cómo te llamamos?" value="${esc(nameInput)}">
+        <label>¿Cuántos jugadores?</label>
+        <div class="choice-group">
+          <button class="choice-btn ${(!createNumPlayers||createNumPlayers===2)?'active':''}" id="np2">2<small>1 vs 1</small></button>
+          <button class="choice-btn ${createNumPlayers===4?'active':''}" id="np4">4<small>2 vs 2</small></button>
+          <button class="choice-btn ${createNumPlayers===6?'active':''}" id="np6">6<small>3 vs 3</small></button>
+        </div>
+        <label>¿A cuántos puntos?</label>
+        <div class="choice-group">
+          <button class="choice-btn ${(!createTarget||createTarget===15)?'active':''}" id="t15">15</button>
+          <button class="choice-btn ${createTarget===30?'active':''}" id="t30">30</button>
+        </div>
+        <button class="btn-primary" id="doCreate" ${busy?'disabled':''}>${busy?'Creando…':'Crear sala'}</button>
+        <div class="error-txt">${esc(localError)}</div>
+      `;
+      document.getElementById('nm1').oninput=e=>{ nameInput=e.target.value; };
+      document.getElementById('np2').onclick=()=>{ createNumPlayers=2; render(); };
+      document.getElementById('np4').onclick=()=>{ createNumPlayers=4; render(); };
+      document.getElementById('np6').onclick=()=>{ createNumPlayers=6; render(); };
+      document.getElementById('t15').onclick=()=>{ createTarget=15; render(); };
+      document.getElementById('t30').onclick=()=>{ createTarget=30; render(); };
+      document.getElementById('doCreate').onclick=()=>createRoom(createNumPlayers||2, createTarget||15);
+    } else {
+      panel.innerHTML = `
+        <label for="nm2">Tu nombre</label>
+        <input type="text" id="nm2" maxlength="18" placeholder="¿Cómo te llamamos?" value="${esc(nameInput)}">
+        <label for="code2">Código de sala</label>
+        <input type="text" id="code2" maxlength="4" placeholder="Ej: 7K2P" value="${esc(joinCodeInput)}" style="text-transform:uppercase; letter-spacing:4px; text-align:center; font-family:'Fraunces',serif; font-size:20px;">
+        <button class="btn-primary" id="doJoin" ${busy?'disabled':''}>${busy?'Uniéndote…':'Unirme a la partida'}</button>
+        <div class="error-txt">${esc(localError)}</div>
+      `;
+      document.getElementById('nm2').oninput=e=>{ nameInput=e.target.value; };
+      document.getElementById('code2').oninput=e=>{ joinCodeInput=e.target.value.toUpperCase(); };
+      document.getElementById('doJoin').onclick=()=>joinRoom(joinCodeInput);
+    }
+    return;
+  }
+
+  if(view==='waiting'){
+    const filled=game?game.players.length:1;
+    const total=game?game.numPlayers:2;
+    const rows=[];
+    for(let i=0;i<total;i++){
+      const p=game.players[i];
+      rows.push(`<div class="seat-row ${p?'':'empty'}"><span class="team-dot t${teamOf(i)}"></span><span class="snm">${p?esc(p.name):'Esperando…'}</span></div>`);
+    }
+    app.innerHTML = `
+      <div class="brand"><span class="mark">🃏 DS Truco</span></div>
+      <div class="center-col">
+        <div class="card-panel" style="text-align:center;">
+          <p class="hint"><span class="pulse-dot"></span>Esperando jugadores (${filled}/${total})</p>
+          <div class="code-display">${roomCode}</div>
+          <p class="hint">Compartí este código. Apenas se completen los ${total} lugares, la partida arranca sola.</p>
+          <div class="seat-list">${rows.join('')}</div>
+          <button class="btn-secondary" id="copyBtn">Copiar código</button>
+        </div>
+      </div>
+      <div class="footer-note">A ${game&&game.targetScore} puntos · equipos: ● dorado vs ● celeste</div>
+    `;
+    document.getElementById('copyBtn').onclick=()=>{ try{ navigator.clipboard.writeText(roomCode); }catch(e){} };
+    return;
+  }
+
+  if(!game) return;
+  checkForCallBanner(game);
+  const mi = gameMode==='cpu' ? mySeat : myIndex();
+  if(mi<0){ app.innerHTML=`<div class="center-col"><p class="hint">Reconectando…</p></div>`; return; }
+  const myTeam=teamOf(mi), rivalTeam=1-myTeam;
+  const myHand=game.hands[mi]||[];
+  const isMyTurn = game.turn===mi && game.turnPhase==='play';
+  const pending = pendingBanner(game, mi);
+  const acts = availableActions(game, mi);
+
+  let overlay='';
+  if(game.status==='finished'){
+    const iWon = game.gameWinner===myTeam;
+    overlay = `
+      <div class="overlay"><div class="card-panel">
+        <h2>${iWon?'¡Ganaste! 🎉':'Perdiste esta vez'}</h2>
+        <p>${teamName(game,0)} ${game.scores[0]} — ${game.scores[1]} ${teamName(game,1)}</p>
+        <button class="btn-primary" id="rematchBtn">${(game.rematchVotes||[]).includes(myTeam)&&gameMode!=='cpu'?'Esperando al otro equipo…':'Pedir revancha'}</button>
+      </div></div>`;
+  }
+
+  // tira de asientos: todos menos yo, en orden de turno a partir del siguiente
+  const others=[];
+  for(let k=1;k<game.numPlayers;k++) others.push((mi+k)%game.numPlayers);
+  const seatStrip = others.map(s=>{
+    const p=game.players[s];
+    const cardsLeft=(game.hands[s]||[]).length;
+    const isTurn = game.turn===s && game.turnPhase==='play';
+    const folded = game.folded.includes(s);
+    return `<div class="seat-chip t${teamOf(s)} ${isTurn?'turn':''} ${folded?'folded':''}">
+      <div class="av">${esc(initials(p.name))}</div>
+      <div class="mini-backs">${Array(cardsLeft).fill(0).map(()=>'<div class="mini-back"></div>').join('')}</div>
+      <div class="nm">${esc(p.name)}</div>
+    </div>`;
+  }).join('');
+
+  const roundsHTML = [0,1,2].map(r=>{
+    const plays = game.table[r]||[];
+    if(!plays.length) return '';
+    const isCurrent = r===game.round && game.status==='playing';
+    const label = 'Ronda '+(r+1)+(isCurrent?' · en juego':'');
+    const cards = plays.map(pl=>{
+      const p=game.players[pl.by];
+      return `<div class="play-slot">${cardHTML(pl.card,'mini')}<span class="who">${esc(p.name)}</span></div>`;
+    }).join('');
+    return `<div class="round-group ${isCurrent?'':'past'}"><div class="round-label">${label}</div><div class="round-plays">${cards}</div></div>`;
+  }).join('');
+
+  const feedHTML=(game.log||[]).slice(-6).map(l=>`<div>${esc(l)}</div>`).join('');
+  const myLabel = teamSeats(game.numPlayers,myTeam).length>1 ? 'Tu equipo' : 'Vos';
+  const rivalLabel = teamSeats(game.numPlayers,rivalTeam).length>1 ? 'Rivales' : (game.players[teamSeats(game.numPlayers,rivalTeam)[0]]||{}).name || 'Rival';
+
+  app.innerHTML = `
+    <div class="table-wrap">
+      <div class="scorebar">
+        <div class="score-side"><span class="label">${esc(rivalLabel)}</span><span class="pts">${game.scores[rivalTeam]}</span></div>
+        <div class="target-chip">a ${game.targetScore}</div>
+        <div class="score-side mine"><span class="label">${esc(myLabel)}</span><span class="pts">${game.scores[myTeam]}</span></div>
+      </div>
+
+      <div class="seat-strip">${seatStrip}</div>
+
+      <div class="table-felt">
+        <div class="banner">${trucoBannerText(game)}</div>
+        <div class="rounds-scroll">${roundsHTML || '<span class="hint">Se reparten las cartas…</span>'}</div>
+      </div>
+
+      <div class="feed">${feedHTML}</div>
+
+      ${pending ? `<div class="pending-box"><div class="msg">${esc(pending.msg)}</div></div>` : ''}
+
+      <div class="my-hand">${myHand.map(c=>cardHTML(c, isMyTurn && !pending ? 'playable':'disabled', `data-card="${c.id}"`)).join('')}</div>
+
+      <div class="action-bar">${acts.map(a=>`<button class="act-btn ${a.cls}" data-act="${a.k}">${a.label}</button>`).join('')}</div>
+    </div>
+    ${overlay}
+  `;
+
+  app.querySelectorAll('[data-card]').forEach(el=>{ el.onclick=()=>{ if(isMyTurn && !pending) playCard(el.getAttribute('data-card')); }; });
+  app.querySelectorAll('[data-act]').forEach(el=>{ el.onclick=()=>handleAction(el.getAttribute('data-act')); });
+  const rb=document.getElementById('rematchBtn'); if(rb) rb.onclick=requestRematch;
+}
+function trucoBannerText(g){
+  const base = g.trucoState.level>0 ? ('Se juega '+g.trucoState.acceptedValue+' pt'+(g.trucoState.acceptedValue>1?'s':'')+' · ') : '';
+  return base+'ronda '+(g.round+1)+' de 3';
+}
+
+window.addEventListener('DOMContentLoaded', init);
+if(document.readyState!=='loading') init();
+})();
+</script>
+</body>
+</html>
