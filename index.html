@@ -167,6 +167,57 @@
   video#introVid{width:100%; max-height:82vh; border-radius:16px; box-shadow:var(--shadow); object-fit:cover;}
   .skip-video{position:absolute; bottom:18px; right:18px; padding:8px 14px; border-radius:20px; background:rgba(0,0,0,.45); border:1px solid rgba(255,255,255,.3); color:var(--cream); font-size:12px;}
   ::-webkit-scrollbar{width:6px;} ::-webkit-scrollbar-thumb{background:rgba(255,255,255,.2); border-radius:4px;}
+  /* ---------- Chat ---------- */
+  .chat-root{display:none;}
+  .chat-root.on{display:block;}
+  .chat-fab{position:fixed; right:14px; bottom:16px; z-index:60; width:54px; height:54px; border-radius:50%; border:1px solid rgba(224,188,106,.6); background:radial-gradient(circle at 35% 30%, #2a6b4e, #0f3626); color:#fff; font-size:24px; box-shadow:0 6px 18px rgba(0,0,0,.45); cursor:pointer; display:flex; align-items:center; justify-content:center;}
+  .chat-root.open .chat-fab{display:none;}
+  .chat-badge{position:absolute; top:-4px; right:-4px; min-width:20px; height:20px; padding:0 5px; border-radius:10px; background:var(--danger); color:#fff; font:700 11px Inter,sans-serif; display:none; align-items:center; justify-content:center; border:2px solid var(--felt-dark);}
+  .chat-panel{position:fixed; z-index:61; right:10px; bottom:10px; width:min(380px, calc(100vw - 20px)); height:min(520px, calc(100vh - 80px)); background:linear-gradient(180deg,#123a2b,#0b261b); border:1px solid rgba(224,188,106,.35); border-radius:16px; box-shadow:0 14px 40px rgba(0,0,0,.6); display:none; flex-direction:column; overflow:hidden;}
+  .chat-root.open .chat-panel{display:flex; animation:chatIn .18s ease;}
+  @keyframes chatIn{from{transform:translateY(16px); opacity:0;} to{transform:none; opacity:1;}}
+  .chat-head{display:flex; align-items:center; gap:8px; padding:10px 10px 8px; border-bottom:1px solid rgba(255,255,255,.08);}
+  .chat-tabs{display:flex; gap:6px; flex:1;}
+  .chat-tabs button{flex:1; padding:8px 10px; border-radius:10px; border:1px solid rgba(255,255,255,.12); background:rgba(0,0,0,.2); color:var(--cream-dim); font:600 13px Inter,sans-serif; cursor:pointer;}
+  .chat-tabs button.on{background:var(--gold); color:#20201a; border-color:var(--gold);}
+  .chat-close{width:34px; height:34px; border-radius:10px; border:none; background:rgba(255,255,255,.08); color:var(--cream); font-size:16px; cursor:pointer;}
+  .chat-list{flex:1; overflow-y:auto; padding:12px 10px; display:flex; flex-direction:column; gap:8px;}
+  .chat-empty{margin:auto; color:var(--cream-dim); font-size:13px; text-align:center; opacity:.8; padding:20px;}
+  .cmsg{max-width:82%; align-self:flex-start; background:rgba(243,236,214,.95); color:#20201a; border-radius:14px 14px 14px 4px; padding:7px 10px 5px; box-shadow:0 2px 6px rgba(0,0,0,.25);}
+  .cmsg.me{align-self:flex-end; background:var(--gold); border-radius:14px 14px 4px 14px;}
+  .cmsg .who{font:700 11px Inter,sans-serif; color:#7a2727; margin-bottom:2px;}
+  .cmsg .txt{font-size:14px; line-height:1.35; word-wrap:break-word; white-space:pre-wrap;}
+  .cmsg .hh{font-size:10px; opacity:.55; text-align:right; margin-top:2px;}
+  .voz-btn{display:flex; align-items:center; gap:8px; border:none; background:rgba(0,0,0,.08); border-radius:20px; padding:6px 12px 6px 6px; cursor:pointer; color:#20201a; min-width:150px;}
+  .voz-btn .voz-ic{width:28px; height:28px; border-radius:50%; background:#164634; color:#fff; display:flex; align-items:center; justify-content:center; font-size:12px;}
+  .voz-btn.playing .voz-ic{background:#7a2727;}
+  .voz-btn.loading{opacity:.6;}
+  .voz-wave{flex:1; height:14px; background:repeating-linear-gradient(90deg, rgba(22,70,52,.55) 0 2px, transparent 2px 5px); -webkit-mask:linear-gradient(90deg,#000 0,#000 100%); border-radius:3px;}
+  .voz-btn.playing .voz-wave{animation:vozPulse .8s ease-in-out infinite alternate;}
+  @keyframes vozPulse{from{opacity:.4;} to{opacity:1;}}
+  .voz-dur{font:600 12px Inter,sans-serif;}
+  .chat-quick{display:flex; gap:6px; overflow-x:auto; padding:6px 10px; scrollbar-width:none;}
+  .chat-quick::-webkit-scrollbar{display:none;}
+  .chat-quick button{flex-shrink:0; padding:6px 10px; border-radius:16px; border:1px solid rgba(224,188,106,.45); background:rgba(0,0,0,.2); color:var(--cream); font:500 12px Inter,sans-serif; cursor:pointer;}
+  .chat-err{display:none; margin:0 10px 6px; padding:7px 10px; border-radius:10px; background:rgba(168,58,58,.9); color:#fff; font-size:12px;}
+  .chat-input{display:flex; gap:6px; padding:8px 10px 10px; border-top:1px solid rgba(255,255,255,.08);}
+  .chat-input input{flex:1; min-width:0; padding:11px 12px; border-radius:12px; border:1px solid rgba(255,255,255,.15); background:rgba(0,0,0,.3); color:var(--cream); font:15px Inter,sans-serif; outline:none;}
+  .chat-input input:focus{border-color:var(--gold);}
+  .chat-send,.chat-mic{width:44px; flex-shrink:0; border-radius:12px; border:none; font-size:18px; cursor:pointer;}
+  .chat-send{background:var(--gold); color:#20201a;}
+  .chat-mic{background:#7a2727; color:#fff;}
+  .chat-rec{display:none; align-items:center; gap:10px; padding:10px; border-top:1px solid rgba(255,255,255,.08); color:var(--cream); font:600 14px Inter,sans-serif;}
+  .rec-dot{width:12px; height:12px; border-radius:50%; background:#e04848; animation:vozPulse .6s ease-in-out infinite alternate;}
+  .chat-rec #chatRecTime{flex:1;}
+  .chat-rec-cancel,.chat-rec-send{padding:10px 14px; border-radius:12px; border:none; font:600 13px Inter,sans-serif; cursor:pointer;}
+  .chat-rec-cancel{background:rgba(255,255,255,.1); color:var(--cream);}
+  .chat-rec-send{background:var(--gold); color:#20201a;}
+  .chat-toast{position:fixed; z-index:59; right:76px; bottom:22px; max-width:min(260px, calc(100vw - 100px)); background:rgba(243,236,214,.97); color:#20201a; border-radius:12px; padding:8px 12px; box-shadow:0 6px 18px rgba(0,0,0,.45); font-size:13px; display:flex; flex-direction:column; gap:2px; opacity:0; transform:translateY(10px); pointer-events:none; transition:all .2s; cursor:pointer;}
+  .chat-toast.show{opacity:1; transform:none; pointer-events:auto;}
+  .chat-toast b{font-size:12px; color:#7a2727;}
+  .chat-toast span{overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .ct-team{font-weight:600; font-size:10px; background:#164634; color:#fff; border-radius:6px; padding:1px 5px; margin-left:4px;}
+  .table-wrap{padding-bottom:76px;}
 </style>
 </head>
 <body>
@@ -1092,6 +1143,282 @@ function subscribeRoom(){
 }
 function myIndex(){ if(!game) return -1; return game.players.findIndex(p=>p.id===myId); }
 
+/* ============================== CHAT (texto + mensajes de voz) ==============================
+   Cada jugador escribe SOLO en su propio documento por canal, así nunca se pisan mensajes:
+     games/<sala>_chat_<canal>_<jugador>   canal: 'all' (todos) o 't0'/'t1' (equipo)
+   Los audios van aparte, uno por documento: games/<sala>_voz_<id>
+   Funciona igual con el backend de Claude y con Firestore (solo usa doc get/set/onSnapshot). */
+const CHAT_MAX_KEEP = 20;          // mensajes que guarda cada jugador por canal
+const VOZ_MAX_SECONDS = 20;
+const QUICK_ALL = ['¡Buena mano!', 'Dale que va 😏', 'Uhh, me mataste', 'Jajaja', '¡Vamos todavía!'];
+const QUICK_TEAM = ['Tengo envido 👀', 'No tengo nada', 'Tengo el macho 🗡️', 'Cantá truco', 'Andá al mazo'];
+let chatKey = '', chatSubs = [], chatDocs = {}, chatMine = {}, chatOpen = false, chatTab = 'all';
+let chatUnread = 0, chatSeen = {}, chatWriteQ = Promise.resolve(), chatPrimed = false;
+let vozCache = {}, vozLoadingSet = {}, chatRec = null, chatRecTimer = null, chatRecStart = 0;
+
+function chatSafeId(s){ return String(s||'x').replace(/[^a-zA-Z0-9]/g,'').slice(-28) || 'x'; }
+function chatDocPath(chan, pid){ return 'games/'+roomCode+'_chat_'+chan+'_'+chatSafeId(pid); }
+function chatActive(){
+  return gameMode==='online' && !!roomCode && !!game && !!backend && myIndex()>=0 && (view==='game' || view==='waiting');
+}
+function chatTeamChan(){
+  if(!game || game.numPlayers<=2 || game.status==='waiting') return null;
+  return 't'+teamOf(myIndex());
+}
+function chatTeardown(){
+  chatSubs.forEach(u=>{ try{ u(); }catch(e){} });
+  chatSubs=[]; chatDocs={}; chatMine={}; chatSeen={}; chatUnread=0; chatKey='';
+}
+function chatSync(){
+  ensureChatDom();
+  const root=document.getElementById('chatRoot');
+  if(!chatActive()){
+    if(chatKey) chatTeardown();
+    root.classList.remove('on'); chatOpen=false; root.classList.remove('open');
+    return;
+  }
+  root.classList.add('on');
+  const teamChan=chatTeamChan();
+  const key=roomCode+'|'+game.players.map(p=>p.id).join(',')+'|'+(teamChan||'');
+  if(key!==chatKey){
+    chatTeardown(); chatKey=key; chatPrimed=false;
+    const mine=myId;
+    const subscribe=(chan, pid)=>{
+      const path=chatDocPath(chan, pid);
+      try{
+        const u=mref(path).onSnapshot(snap=>{
+          const d = snap && snap.exists ? (snap.data()||{}) : {};
+          const msgs = Array.isArray(d.msgs) ? d.msgs : [];
+          chatDocs[path]={chan, msgs};
+          if(pid===mine && !chatMine[chan]) chatMine[chan]=msgs.slice();
+          chatOnData();
+        }, ()=>{});
+        chatSubs.push(u);
+      }catch(e){}
+    };
+    game.players.forEach(p=>subscribe('all', p.id));
+    if(teamChan){
+      game.players.forEach((p,i)=>{ if('t'+teamOf(i)===teamChan) subscribe(teamChan, p.id); });
+    } else if(chatTab!=='all'){ chatTab='all'; }
+    setTimeout(()=>{ chatPrimed=true; }, 2500);
+  }
+  chatRender();
+}
+function chatAllMsgs(chan){
+  const out=[];
+  Object.values(chatDocs).forEach(d=>{ if(d.chan===chan) d.msgs.forEach(m=>out.push(m)); });
+  out.sort((a,b)=>(a.ts||0)-(b.ts||0));
+  return out.slice(-60);
+}
+function chatOnData(){
+  let fresh=0;
+  ['all', chatTeamChan()].filter(Boolean).forEach(chan=>{
+    chatAllMsgs(chan).forEach(m=>{
+      if(chatSeen[m.id]) return;
+      chatSeen[m.id]=true;
+      if(m.voz) vozPrefetch(m.voz);
+      if(m.pid!==myId && chatPrimed && !(chatOpen && chatTab===chan)){ fresh++; }
+      if(m.pid!==myId && chatPrimed){ chatToast(m, chan); }
+    });
+  });
+  if(fresh){ chatUnread+=fresh; chatPing(); }
+  chatRender();
+}
+function chatPing(){
+  const ctx=getAudioCtx(); if(!ctx) return;
+  try{
+    const t=ctx.currentTime, o=ctx.createOscillator(), g=ctx.createGain();
+    o.type='sine'; o.frequency.setValueAtTime(880,t); o.frequency.exponentialRampToValueAtTime(1320,t+0.08);
+    g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(0.18,t+0.01); g.gain.exponentialRampToValueAtTime(0.0001,t+0.22);
+    o.connect(g); g.connect(ctx.destination); o.start(t); o.stop(t+0.25);
+  }catch(e){}
+}
+function chatToast(m, chan){
+  if(chatOpen && chatTab===chan) return;
+  let el=document.getElementById('chatToast');
+  if(!el){ el=document.createElement('div'); el.id='chatToast'; el.className='chat-toast'; document.body.appendChild(el); el.onclick=()=>{ chatTab=chatToast._chan||'all'; chatSetOpen(true); }; }
+  chatToast._chan=chan;
+  const body = m.voz ? '🎤 Mensaje de voz' : (m.text||'');
+  el.innerHTML=`<b>${esc(m.from||'')}${chan!=='all'?' <span class="ct-team">equipo</span>':''}</b><span>${esc(body)}</span>`;
+  el.classList.remove('show'); void el.offsetWidth; el.classList.add('show');
+  clearTimeout(chatToast._t); chatToast._t=setTimeout(()=>el.classList.remove('show'), 3200);
+}
+function chatSend(payload){
+  if(!chatActive()) return;
+  const chan = chatTab==='all' ? 'all' : (chatTeamChan()||'all');
+  const msg=Object.assign({ id:'m'+Date.now().toString(36)+Math.random().toString(36).slice(2,6), pid:myId,
+    from:(game.players[myIndex()]||{}).name||'Jugador', ts:Date.now() }, payload);
+  const list=(chatMine[chan]||[]).concat([msg]).slice(-CHAT_MAX_KEEP);
+  chatMine[chan]=list;
+  const path=chatDocPath(chan, myId);
+  chatDocs[path]={chan, msgs:list};
+  chatSeen[msg.id]=true;
+  chatRender(true);
+  chatWriteQ = chatWriteQ.then(()=>mref(path).set({msgs:list, updatedAt:Date.now()})).catch(()=>{ chatError('No se pudo enviar el mensaje.'); });
+}
+function chatError(t){
+  const el=document.getElementById('chatErr'); if(!el) return;
+  el.textContent=t; el.style.display='block';
+  clearTimeout(chatError._t); chatError._t=setTimeout(()=>{ el.style.display='none'; }, 4000);
+}
+
+/* ---------- Voz ---------- */
+function blobToB64(blob){ return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(String(r.result).split(',')[1]); r.onerror=rej; r.readAsDataURL(blob); }); }
+function b64ToBlobURL(b64, mime){ const bin=atob(b64); const u=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i); return URL.createObjectURL(new Blob([u],{type:mime||'audio/webm'})); }
+async function vozPrefetch(path){
+  if(vozCache[path] || vozLoadingSet[path]) return;
+  vozLoadingSet[path]=true;
+  try{
+    const snap=await mref(path).get();
+    if(snap && snap.exists){ const d=snap.data(); if(d && d.data){ vozCache[path]=b64ToBlobURL(d.data, d.mime); chatRender(); } }
+  }catch(e){}
+  vozLoadingSet[path]=false;
+}
+let vozPlaying=null;
+function vozPlay(path, btn){
+  const url=vozCache[path];
+  if(!url){ vozPrefetch(path); chatError('Cargando el audio, probá de nuevo en un segundo.'); return; }
+  try{
+    if(vozPlaying){ vozPlaying.pause(); vozPlaying=null; }
+    const a=new Audio(url); vozPlaying=a;
+    if(btn) btn.classList.add('playing');
+    a.onended=()=>{ if(btn) btn.classList.remove('playing'); vozPlaying=null; };
+    a.play().catch(()=>{ if(btn) btn.classList.remove('playing'); chatError('Tu navegador no pudo reproducir este audio.'); });
+  }catch(e){}
+}
+function pickRecMime(){
+  const c=['audio/webm;codecs=opus','audio/webm','audio/mp4','audio/ogg;codecs=opus'];
+  try{ for(const m of c){ if(window.MediaRecorder && MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(m)) return m; } }catch(e){}
+  return '';
+}
+async function vozStart(){
+  if(chatRec) return;
+  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || !window.MediaRecorder){
+    chatError('Este navegador no permite grabar audio.'); return;
+  }
+  let stream;
+  try{ stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true, noiseSuppression:true}}); }
+  catch(e){
+    chatError(typeof window.claude!=='undefined'
+      ? 'Acá no se puede usar el micrófono. Los audios funcionan en la versión de GitHub Pages.'
+      : 'No se pudo usar el micrófono. Revisá el permiso del navegador.');
+    return;
+  }
+  const mime=pickRecMime();
+  let rec;
+  try{ rec = mime ? new MediaRecorder(stream,{mimeType:mime, audioBitsPerSecond:24000}) : new MediaRecorder(stream); }
+  catch(e){ try{ rec=new MediaRecorder(stream); }catch(e2){ stream.getTracks().forEach(t=>t.stop()); chatError('No se pudo grabar.'); return; } }
+  const chunks=[];
+  rec.ondataavailable=e=>{ if(e.data && e.data.size) chunks.push(e.data); };
+  rec.onstop=async ()=>{
+    stream.getTracks().forEach(t=>t.stop());
+    const dur=Math.round((Date.now()-chatRecStart)/100)/10;
+    const cancelled=rec._cancel;
+    chatRec=null; clearInterval(chatRecTimer); chatRender();
+    if(cancelled || dur<0.6 || !chunks.length) return;
+    try{
+      const type=(rec.mimeType||mime||'audio/webm').split(';')[0];
+      const blob=new Blob(chunks,{type});
+      const b64=await blobToB64(blob);
+      if(b64.length>700000){ chatError('El audio es muy largo.'); return; }
+      const id='v'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+      const path='games/'+roomCode+'_voz_'+id;
+      await mref(path).set({mime:type, data:b64, by:myId, ts:Date.now()});
+      vozCache[path]=b64ToBlobURL(b64, type);
+      chatSend({voz:path, dur});
+    }catch(e){ chatError('No se pudo enviar el audio.'); }
+  };
+  chatRec=rec; chatRecStart=Date.now();
+  rec.start();
+  chatRecTimer=setInterval(()=>{
+    const s=(Date.now()-chatRecStart)/1000;
+    const el=document.getElementById('chatRecTime'); if(el) el.textContent=Math.floor(s)+'s / '+VOZ_MAX_SECONDS+'s';
+    if(s>=VOZ_MAX_SECONDS) vozStop(false);
+  }, 200);
+  chatRender();
+}
+function vozStop(cancel){ if(!chatRec) return; chatRec._cancel=!!cancel; try{ chatRec.stop(); }catch(e){} }
+
+/* ---------- Interfaz ---------- */
+function ensureChatDom(){
+  if(document.getElementById('chatRoot')) return;
+  const root=document.createElement('div'); root.id='chatRoot'; root.className='chat-root';
+  root.innerHTML=`
+    <button class="chat-fab" id="chatFab" aria-label="Chat">💬<span class="chat-badge" id="chatBadge"></span></button>
+    <div class="chat-panel" id="chatPanel">
+      <div class="chat-head">
+        <div class="chat-tabs" id="chatTabs"></div>
+        <button class="chat-close" id="chatClose" aria-label="Cerrar">✕</button>
+      </div>
+      <div class="chat-list" id="chatList"></div>
+      <div class="chat-quick" id="chatQuick"></div>
+      <div class="chat-err" id="chatErr"></div>
+      <div class="chat-input" id="chatInputRow">
+        <input id="chatText" type="text" maxlength="200" placeholder="Escribí un mensaje…" autocomplete="off">
+        <button class="chat-send" id="chatSendBtn" aria-label="Enviar">➤</button>
+        <button class="chat-mic" id="chatMic" aria-label="Grabar audio">🎤</button>
+      </div>
+      <div class="chat-rec" id="chatRecRow">
+        <span class="rec-dot"></span><span id="chatRecTime">0s</span>
+        <button class="chat-rec-cancel" id="chatRecCancel">Cancelar</button>
+        <button class="chat-rec-send" id="chatRecSend">Enviar ➤</button>
+      </div>
+    </div>`;
+  document.body.appendChild(root);
+  document.getElementById('chatFab').onclick=()=>chatSetOpen(!chatOpen);
+  document.getElementById('chatClose').onclick=()=>chatSetOpen(false);
+  const inp=document.getElementById('chatText');
+  const send=()=>{ const t=inp.value.trim(); if(!t) return; inp.value=''; chatSend({text:t.slice(0,200)}); };
+  document.getElementById('chatSendBtn').onclick=send;
+  inp.addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); send(); } });
+  document.getElementById('chatMic').onclick=()=>vozStart();
+  document.getElementById('chatRecCancel').onclick=()=>vozStop(true);
+  document.getElementById('chatRecSend').onclick=()=>vozStop(false);
+  document.getElementById('chatTabs').addEventListener('click', e=>{
+    const b=e.target.closest('[data-chan]'); if(!b) return; chatTab=b.getAttribute('data-chan'); chatRender(true);
+  });
+  document.getElementById('chatQuick').addEventListener('click', e=>{
+    const b=e.target.closest('[data-q]'); if(!b) return; chatSend({text:b.getAttribute('data-q')});
+  });
+  document.getElementById('chatList').addEventListener('click', e=>{
+    const b=e.target.closest('[data-voz]'); if(!b) return; vozPlay(b.getAttribute('data-voz'), b);
+  });
+}
+function chatSetOpen(open){
+  chatOpen=open;
+  const root=document.getElementById('chatRoot'); if(!root) return;
+  root.classList.toggle('open', open);
+  if(open){ chatUnread=0; chatRender(true); }
+  else if(chatRec) vozStop(true);
+}
+function chatRender(scroll){
+  const root=document.getElementById('chatRoot'); if(!root || !chatActive()) return;
+  const badge=document.getElementById('chatBadge');
+  badge.textContent = chatUnread>9 ? '9+' : String(chatUnread||'');
+  badge.style.display = chatUnread ? 'flex' : 'none';
+  const teamChan=chatTeamChan();
+  if(chatTab!=='all' && !teamChan) chatTab='all';
+  const tabs=[['all','Todos']]; if(teamChan) tabs.push(['team','Mi equipo']);
+  document.getElementById('chatTabs').innerHTML=tabs.map(([k,l])=>`<button data-chan="${k}" class="${chatTab===k?'on':''}">${l}</button>`).join('');
+  const chan = chatTab==='all' ? 'all' : teamChan;
+  const msgs=chatAllMsgs(chan);
+  const list=document.getElementById('chatList');
+  const atBottom = list.scrollHeight - list.scrollTop - list.clientHeight < 40;
+  list.innerHTML = msgs.length ? msgs.map(m=>{
+    const mine=m.pid===myId;
+    const hhmm=new Date(m.ts||0).toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
+    const body = m.voz
+      ? `<button class="voz-btn ${vozCache[m.voz]?'':'loading'}" data-voz="${esc(m.voz)}"><span class="voz-ic">▶</span><span class="voz-wave"></span><span class="voz-dur">${m.dur?Math.round(m.dur)+'s':''}</span></button>`
+      : `<div class="txt">${esc(m.text||'')}</div>`;
+    return `<div class="cmsg ${mine?'me':''}">${mine?'':`<div class="who">${esc(m.from||'')}</div>`}${body}<div class="hh">${hhmm}</div></div>`;
+  }).join('') : `<div class="chat-empty">${chan==='all'?'Charlá con todos los de la mesa.':'Solo lo ven tus compañeros de equipo 🤫'}</div>`;
+  if(scroll || atBottom) list.scrollTop=list.scrollHeight;
+  document.getElementById('chatQuick').innerHTML=(chan==='all'?QUICK_ALL:QUICK_TEAM).map(q=>`<button data-q="${esc(q)}">${esc(q)}</button>`).join('');
+  document.getElementById('chatInputRow').style.display = chatRec ? 'none' : 'flex';
+  document.getElementById('chatRecRow').style.display = chatRec ? 'flex' : 'none';
+  document.getElementById('chatText').placeholder = chan==='all' ? 'Mensaje para todos…' : 'Mensaje para tu equipo…';
+}
+
 /* ============================== FLUJO CPU (local) ============================== */
 function startCpuGame(target){
   const name=(nameInput||'Vos').trim().slice(0,18) || 'Vos';
@@ -1282,7 +1609,8 @@ function pendingBanner(g, seat){
 }
 
 /* ============================== RENDER ============================== */
-function render(){
+function render(){ renderMain(); try{ chatSync(); }catch(e){} }
+function renderMain(){
   const app=document.getElementById('app');
 
   if(view==='splash'){
